@@ -1,19 +1,38 @@
 # Establish DB connection ----
-connectDB <- function(dblist, username, password, log_file, host = "localhost", port = 0) {
+connectDB <- function(dblist, dbms = "MySQL", username = NULL, password = NULL, log_file, host = "localhost", port = 0) {
+  
+  if (dbms == "MySQL") {
+    names <- dblist
+  } else {
+    names <- purrr::map(
+      dblist,
+      function(name) {
+        name <- gsub(".*(?<=\\W)(\\w+)\\.db", "\\1", name, perl = T)
+      }
+    )
+  }
 
   connections <- purrr::map(
     dblist,
     function(name) {
       tryCatch(
         {
-          conn <- DBI::dbConnect(
-            RMariaDB::MariaDB(), 
-            dbname = name,
-            host = host,
-            port = port,
-            username = dbusername, 
-            password = dbpassword
-          )
+          
+          if (dbms == "MySQL") {
+            conn <- DBI::dbConnect(
+              RMariaDB::MariaDB(), 
+              dbname = name,
+              host = host,
+              port = port,
+              username = dbusername, 
+              password = dbpassword
+            )
+          } else if (dbms == "SQLite") {
+            conn <- RSQLite::dbConnect(
+              RSQLite::SQLite(),
+              name
+            )
+          }
           logMessage(
             paste("Connection established to database", name, "successfully."),
             log_file
@@ -30,6 +49,6 @@ connectDB <- function(dblist, username, password, log_file, host = "localhost", 
       )
     }
   )
-  connections <- setNames(connections, dblist)
+  connections <- setNames(connections, names)
   return(connections)
 }

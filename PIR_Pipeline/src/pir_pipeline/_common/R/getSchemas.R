@@ -6,8 +6,13 @@ getSchemas <- function(conn, tables) {
       purrr::walk(
         tables,
         function(table) {
-          vars <- DBI::dbGetQuery(conn, paste("SHOW COLUMNS FROM", table))
-          vars <- vars$Field
+          if (attr(conn, "class") == "SQLiteConnection") {
+            vars <- DBI::dbGetQuery(conn, paste0("PRAGMA table_info(", table, ")"))
+            vars <- vars$name
+          } else {
+            vars <- DBI::dbGetQuery(conn, paste("SHOW COLUMNS FROM", table))
+            vars <- vars$Field
+          }
           schema[[table]] <- vars
           assign("schema", schema, envir = func_env)
         }

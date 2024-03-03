@@ -17,11 +17,7 @@
 #' replaceInto(conn, test_df, "test")
 replaceInto <- function(conn, df, table, log_file = NULL) {
   
-  DBI::dbExecute(conn, "SET foreign_key_checks = 0")
-  DBI::dbExecute(conn, "SET autocommit = 0")
-  
   query <- paste(
-    "REPLACE INTO",
     table,
     "(",
     paste(names(df), collapse = ","),
@@ -36,11 +32,34 @@ replaceInto <- function(conn, df, table, log_file = NULL) {
     ")"
   )
   
-  DBI::dbExecute(conn, query, params = unname(as.list(df)))
-  if (!is.null(log_file)) {
-    logMessage(paste("Successfully inserted data into", table), log_file)
-  }
+  if (attr(conn, "class") == "SQLiteConnection") {
+    
+    RSQLite::dbExecute(conn, "PRAGMA foreign_keys = OFF")
+    
+    query <- paste("INSERT OR REPLACE INTO", query)
+    
+    RSQLite::dbExecute(conn, query, params = unname(as.list(df)))
+    if (!is.null(log_file)) {
+      logMessage(paste("Successfully inserted data into", table), log_file)
+    }
+    
+    RSQLite::dbExecute(conn, "PRAGMA foreign_keys = ON")
+    
+  } else {
   
-  DBI::dbExecute(conn, "SET foreign_key_checks = 1")
-  DBI::dbExecute(conn, "COMMIT")
+  
+    DBI::dbExecute(conn, "SET foreign_key_checks = 0")
+    DBI::dbExecute(conn, "SET autocommit = 0")
+    
+    query <- paste("REPLACE INTO", query)
+    
+    DBI::dbExecute(conn, query, params = unname(as.list(df)))
+    if (!is.null(log_file)) {
+      logMessage(paste("Successfully inserted data into", table), log_file)
+    }
+    
+    DBI::dbExecute(conn, "SET foreign_key_checks = 1")
+    DBI::dbExecute(conn, "COMMIT")
+    
+  }
 }
