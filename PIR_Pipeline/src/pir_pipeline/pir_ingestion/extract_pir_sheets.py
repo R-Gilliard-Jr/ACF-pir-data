@@ -1,9 +1,9 @@
 def extract_pir_sheets(workbooks):
     import pandas as pd
-    import sqlite3, os, json, time
-    import config
+    import sqlite3, os, time
+    from pir_pipeline import config as conf
 
-    config = config.config
+    config = conf.config
 
     # Establish db connection
     pir_logs_db = os.path.join(config["dbpath"], "pir_logs.db")
