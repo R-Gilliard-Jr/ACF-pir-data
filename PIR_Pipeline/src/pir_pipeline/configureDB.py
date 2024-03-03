@@ -1,15 +1,14 @@
-import os, json
-import tkinter as tk
-from tkinter import ttk
-from tkinter.messagebox import showinfo
-
 def main():
+    import os, json
+    import tkinter as tk
+    from tkinter import ttk
+    from tkinter.messagebox import showinfo
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    config_json = os.path.join(current_dir, "config.json")
+    config_py = os.path.join(current_dir, "config.py")
 
     root = tk.Tk()
-    root.geometry("500x250")
+    root.geometry("500x300")
     root.resizable(False, False)
     root.title("Configure Database Credentials")
 
@@ -17,6 +16,7 @@ def main():
     password = tk.StringVar()
     host = tk.StringVar(value='localhost')
     port = tk.IntVar(value=0)
+    db_path = tk.StringVar()
 
     # Configuration Frame
     configure = ttk.Frame(root)
@@ -51,21 +51,30 @@ def main():
     port_entry = ttk.Entry(configure, textvariable = port)
     port_entry.pack(fill="x", expand = True)
 
+    # Database path
+    db_path_label = ttk.Label(configure, text='Database Path:')
+    db_path_label.pack(fill='x', expand=True)
+
+    db_path_entry = ttk.Entry(configure, textvariable = db_path)
+    db_path_entry.pack(fill="x", expand = True)
+
     # Finish button
     def finish_clicked():
+        from . import config as conf
         dbusername = username.get()
         dbpassword = password.get()
         dbhost = host.get()
         dbport = port.get()
+        dbpath = db_path.get()
         try:
-            config = open(config_json)
-            config = json.loads(config.read())
+            config = conf.config
         except:
             config = {}
-        for c in ["dbusername", "dbpassword", "dbhost", "dbport"]:
+        for c in ["dbusername", "dbpassword", "dbhost", "dbport", "dbpath"]:
             config[c] = locals()[c]
-        with open(config_json, 'w') as f:
-            json.dump(config, f)
+        with open(config_py, 'w') as f:
+            f.write("config = ")
+            json.dump(config, f, indent=4)
         root.destroy()
         from . import setupDB
         setupDB.main()

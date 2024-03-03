@@ -1,11 +1,12 @@
-import os, json, glob
-import tkinter as tk
-from tkinter import Tk, ttk
-from tkinter.filedialog import askdirectory, askopenfilename
 
 def main():
+    import os, json, glob
+    import tkinter as tk
+    from tkinter import Tk, ttk
+    from tkinter.filedialog import askdirectory, askopenfilename
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    config_json = os.path.join(current_dir, "config.json")
+    config_py = os.path.join(current_dir, "config.json")
     
     root = Tk()
     root.title("PIR Setup")
@@ -54,9 +55,9 @@ def main():
 
     # Setup directories and configuration
     def finish_clicked():
+        from . import config as conf
         try:
-            config = open(config_json)
-            config = json.loads(config.read())
+            config = conf.config
         except:
             config = {}
         
@@ -69,8 +70,9 @@ def main():
             
         config["R_Path"] = r_entry.get()
 
-        with open(config_json, "w") as f:
-            json.dump(config, f)
+        with open(config_py, "w") as f:
+            f.write("config = ")
+            json.dump(config, f, indent = 4)
         root.destroy()
 
     finish_button = ttk.Button(configure, text="Finish", command=finish_clicked)
