@@ -47,7 +47,7 @@ log_file <- startLog("pir_ingestion_logs")
 
 # Establish DB connection ----
 if (config$dbms == "SQLite") {
-  connections <- connectDB("D:\\Documents\\PIR\\pir_data.db", dbms = "SQLite", log_file = log_file)
+  connections <- connectDB(file.path(config$root, "pir_data.db"), dbms = "SQLite", log_file = log_file)
 } else {
   connections <- connectDB("pir_data", dbusername, dbpassword, log_file = log_file)
 }
