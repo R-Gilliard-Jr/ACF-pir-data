@@ -46,7 +46,11 @@ walk(
 log_file <- startLog("pir_ingestion_logs")
 
 # Establish DB connection ----
-connections <- connectDB("pir_data", dbusername, dbpassword, log_file)
+if (config$dbms == "SQLite") {
+  connections <- connectDB("D:\\Documents\\PIR\\pir_data.db", dbms = "SQLite", log_file = log_file)
+} else {
+  connections <- connectDB("pir_data", dbusername, dbpassword, log_file = log_file)
+}
 conn <- connections$pir_data
 tables <- c("response", "question", "program", "unmatched_question")
 schema <- getSchemas(conn, tables)
@@ -54,6 +58,7 @@ schema <- getSchemas(conn, tables)
 # Get file(s) ----
 args <- commandArgs(TRUE)
 wb_list <- args
+wb_list <- "D:\\repos\\ACF-pir-data\\PIR_Pipeline\\test_data\\base_test_2009.xlsx"
 
 # Ingestion ----
 
@@ -65,7 +70,7 @@ map(
     gc()
   }
 )
-
+stop()
 # Write log and connect to DB
 logMessage("Successfully ingested PIR data", log_file)
 writeLog(log_file)
