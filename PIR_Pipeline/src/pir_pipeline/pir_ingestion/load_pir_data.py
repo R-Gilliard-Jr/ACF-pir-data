@@ -5,7 +5,7 @@ def load_pir_data(wb_list):
     config = conf.config
 
     # Establish db connection
-    pir_logs_db = os.path.join(config["dbpath"], "pir_logs.db")
+    pir_logs_db = os.path.join(config["root"], "pir_logs.db")
     try:
         log_conn = sqlite3.connect(pir_logs_db)
         log_cursor = log_conn.cursor()
@@ -17,6 +17,12 @@ def load_pir_data(wb_list):
         for sheet in workbook.sheet_names:
             # Special logic for sections
             if re.match(section_re, sheet):
+
+                # Naive approach to reshape, needs refactoring
+                df = pd.read_excel(workbook, sheet_name=sheet)
+                df.columns = df.iloc[0]
+                df = df.iloc[1:]
+                df = df.melt(id_vars=list(df.columns[0:10]), var_name = 'question_name', value_name = 'answer')
                 continue
             # Reference and program can be loaded directly
             else:
@@ -35,7 +41,3 @@ def load_pir_data(wb_list):
                     print(df)
                 except Exception as e:
                     raise(e)
-            
-import extract_pir_sheets
-wb_list = extract_pir_sheets.extract_pir_sheets(["D:/repos/acf-pir-data/PIR_Pipeline/test_data/base_test_2008.xlsx", "D:/repos/acf-pir-data/PIR_Pipeline/test_data/base_test_2009.xlsx"])
-load_pir_data(wb_list)
